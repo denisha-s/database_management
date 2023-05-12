@@ -1,0 +1,74 @@
+Let's go back to our trailhead design exercise and assume we created a registration system with these tables:
+
+* schedule (student, cid) foreign key to classes, student defaults to CURRENT_USER
+* my_schedule (view) (cid) SELECT * FROM schedule WHERE USER = student;
+* classes (cid, name, daysofweek, timeofday, duration, prof, room, size) 
+('CSCI403A', 'Database Management', 'MWF',  TIME'09:00', 50, 'read', 'BBW250', 65); 
+
+We have these roles: student, prof, room_admin, class_admin, registrar
+
+Students can read the classes table and select, insert, update, and delete from the my_schedule view
+profs can read the schedule and classes tables 
+room_admins can update the room and size columns of the classes table
+class_admin can insert rows into classes and modify rows in classes (they can't delete rows) except room
+registrar can read, insert, update, and delete rows in all tables
+
+
+-- CREATE SCHEMA registrar;
+
+CREATE ROLE registrar NOLOGIN;
+CREATE ROLE student NOLOGIN;
+CREATE ROLE prof NOLOGIN;
+CREATE ROLE class_admin NOLOGIN;
+CREATE ROLE room_admin NOLOGIN;
+
+-- SET ROLE registrar;
+-- SET search_path = registrar;
+
+CREATE TABLE classes (
+    cid TEXT PRIMARY KEY,
+    name TEXT,
+    daysofweek TEXT,
+    timeofday TIME,
+    duration INTEGER,
+    prof TEXT,
+    room TEXT,
+    size INTEGER);
+
+CREATE TABLE schedule (
+    student TEXT DEFAULT CURRENT_USER,
+    cid TEXT REFERENCES classes(cid),
+    PRIMARY KEY(student, cid)
+);
+
+CREATE VIEW my_schedule AS
+    SELECT cid FROM schedule WHERE student = CURRENT_USER;
+
+
+
+-- Students can read the classes table and select, insert, update, and delete from the my_schedule view
+GRANT SELECT ON classes TO student;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON my_schedule TO student;
+
+-- has a primary key
+INSERT INTO classes VALUES ('CSCI403A', 'Database Management', 'MWF',  TIME'09:00', 50, 'read', 'BBW250', 65); 
+INSERT INTO my_schedule VALUES ('CSCI403A');
+SELECT * FROM scheudle;
+-- student column inserts your username
+
+
+-- profs can read the schedule and classes tables 
+GRANT SELECT ON classes, schedule TO prof;
+
+-- room_admins can update the room and size columns of the classes table
+GRANT SELECT, UPDATE(room, size) ON classes TO room_admin;
+
+-- class_admin can insert rows into classes and modify rows in classes (they can't delete rows) except room
+GRANT SELECT, INSERT, UPDATE(cid, name, daysofweek, timeofday, duration, prof, size)
+    ON classes TO class_admin;
+
+-- registrar can read, insert, update, and delete rows in all tables
+GRANT SELECT, INSERT, UPDATE, DELETE ON schedule, classes, my_schedule TO registrar;
+
+

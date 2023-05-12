@@ -1,0 +1,126 @@
+/*
+STEP 1: regular entities
+*/
+
+CREATE TABLE employee(
+    id SERIAL PRIMARY KEY,
+    ssn INTEGER UNIQUE NOT NULL,
+    name TEXT,
+    position TEXT,
+    pay_rate NUMERIC (8,2), -- snake case
+    pay_type TEXT
+);
+
+CREATE TABLE model(
+    id_name TEXT,
+    id_number SERIAL,
+    type TEXT,
+    PRIMARY KEY (id_name, id_number)
+);
+
+CREATE TABLE vendor(
+    name TEXT PRIMARY KEY,
+    contact_info_email TEXT CHECK (contact_info_email LIKE '@mines.edu'), -- specific to mines email only
+    contact_info_phone TEXT
+);
+
+CREATE TABLE factory(
+    city TEXT PRIMARY KEY
+);
+
+CREATE TABLE part(
+    part_number SERIAL PRIMARY KEY,
+    description TEXT
+);
+
+/*
+STEP 2: weak entities (assembly line)
+*/
+
+CREATE TABLE assembly_line(
+    factory_city TEXT REFERENCES factory(city),
+    number SERIAL,
+    capacity INTEGER,
+    PRIMARY KEY(factory_city, number) -- primary key don't allow nulls
+);
+
+/*
+STEP 3: 1:1 Relationships
+*/
+
+ALTER TABLE factory 
+    ADD COLUMN employee_id INTEGER NOT NULL -- for total participation
+        REFERENCES employee(id);
+
+/*
+STEP 4: 1:N Relationships
+*/
+
+-- works at relationship
+ALTER TABLE employee
+    ADD COLUMN factory_city TEXT
+        REFERENCES factory(city);
+
+-- supervises relationship
+ALTER TABLE employee
+    ADD COLUMN supervisor_id INTEGER
+        REFERNCES employee(id)
+
+ALTER TABLE model
+    ADD COLUMN factory_city TEXT NOT NULL -- total participation
+        REFERENCES factory(city);
+
+/*
+STEP 5: N:M Relationships
+*/
+
+-- can use relationship
+CREATE TABLE model_part_xref(
+    model_id_name TEXT,
+    model_id_number INTEGER,
+    part_number INTEGER REFERENCES part(part_number),
+    PRIMARY KEY (model_id_name, model_id_number, part_number),
+    FOREIGN KEY (model_id_name, model_id_number)
+        REFERENCES model (id_name, id_number)
+);
+
+CREATE TABLE vendor_part_xref(
+    vendor_name TEXT REFERENCES,
+    vendor(name),
+    part_number INTEGER 
+        REFERENCES part(part_number),
+    price NUMERIC(10,2),
+    PRIMARY KEY(vendor_name, part_number)
+);
+
+/*
+STEP 6: Multi-valued Realtionships
+*/
+
+CREATE TABLE model_purpose(
+    model_id_name TEXT,
+    model_id_number INTEGER,
+    purpose TEXT
+    PRIMARY KEY (model_id_name, model_id_number, purpose),
+    FOREIGN KEY (model_id_name, model_id_number)
+        REFERENCES model (id_name, id_name)
+);
+
+/*
+STEP 8: Derived Attributes
+*/
+
+CREATE VIEW factory_derived AS
+    SELECT city, employee_id,
+    SUM(a.capacity) AS capacity
+    FROM factory f JOIN
+    assembly_line a
+        ON f.city = a.factory_city
+    GROUP BY city, employee_id;
+
+
+
+
+
+
+

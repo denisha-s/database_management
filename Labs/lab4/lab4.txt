@@ -1,0 +1,61 @@
+Schema:
+    R = {rider, payment, driver, car, start, end, miles, fare}
+
+Dependencies:
+    {rider}→{payment}
+    {driver}→{car}
+    {start, end}→{miles, fare}
+    {fare}→{miles}
+
+Step 1
+    1. Starting schema: R
+    2. Decompose on {fare}→{miles}
+    3. Results
+        R1 = {rider, payment, driver, car, start, end, fare}, key = rider, driver
+        R2 = {fare, miles}, key = fare
+        SQL:
+            CREATE TABLE R1 AS SELECT 
+                rider, payment, driver, car, start, end, fare FROM R;
+            ALTER TABLE R1 ADD CONSTRAINT R1_pkey PRIMARY KEY(rider);
+            CREATE TABLE R2 AS SELECT DISTINCT fare, miles FROM R;
+            ALTER TABLE R2 ADD CONSTRAINT R2_pkey PRIMARY KEY(fare);
+Step 2
+    1. Starting schema: R1
+    2. Decompose on {rider}→{payment}
+    3. Results:
+        R3 = {rider, driver, car, start, end, fare}, key = rider, driver
+        R4 = {rider, payment}, key = rider
+        SQL:
+            CREATE TABLE R3 AS SELECT 
+                rider, driver, car, start, end, fare FROM R1;
+            ALTER TABLE R3 ADD CONSTRAINT R3_pkey PRIMARY KEY(rider);
+            CREATE TABLE R4 AS SELECT rider, payment FROM R1;
+            ALTER TABLE R4 ADD CONSTRAINT R4_pkey PRIMARY KEY(rider);
+            DROP TABLE R1;
+Step 3
+    1. Starting schema: R3
+    2. Decompose on {driver}→{car}
+    3. Results:
+        R5 = {rider, driver, start, end, fare}, key = rider, driver
+        R6 = {driver, car}, key = driver
+        SQL:
+        CREATE TABLE R5 AS SELECT 
+            rider, driver, start, end, fare FROM R3;
+        ALTER TABLE R5 ADD CONSTRAINT R5_pkey PRIMARY KEY(rider);
+        CREATE TABLE R6 AS SELECT driver, car FROM R3;
+        ALTER TABLE R6 ADD CONSTRAINT R6_pkey PRIMARY KEY(driver);
+        DROP TABLE R3;
+Step 4
+1. Starting schema: R5
+    2. Decompose on {start, end}→{miles, fare}
+    3. Results:
+        R7 = {rider, driver, start, end}, key = rider, driver
+        R8 = {start, end, miles, fare}, key = start, end
+        SQL:
+        CREATE TABLE R7 AS SELECT rider, driver, start, end FROM R5;
+        ALTER TABLE R7 ADD CONSTRAINT R7_pkey PRIMARY KEY(rider);
+        CREATE TABLE R8 AS SELECT start, end, miles, fare FROM R5;
+        ALTER TABLE R8 ADD CONSTRAINT R8_pkey PRIMARY KEY(start, end);
+        DROP TABLE R5;
+
+R -> R3, R4, R6, R7, R8

@@ -1,0 +1,71 @@
+SET search_path = transactions;
+
+\d transactions.seats9
+
+SELECT * FROM transactions.seats9
+
+BEGIN; 
+
+SELECT * 
+FROM seats 
+WHERE seat_number = '35B'
+
+-- user 1
+UPDATE seats 
+SET reservation = 'Donald D.'
+WHERE seat_number = '35B';
+
+-- user 2
+UPDATE seats 
+SET reservation = 'Donald D.'
+WHERE seat_number = '35B';
+-- lost update
+
+COMMIT; -- released the right-lock
+-- user 1 lost seat 
+-- user 2 got the seat when they COMMIT
+
+
+
+BEGIN;
+
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+SELECT *
+FROM seats
+WHERE seat_number = '35D'
+
+-- donald tries again
+UPDATE seats
+SET reservation = 'Donald D.'
+WHERE seat = '35D';
+
+COMMIT;
+
+-- user 3
+UPDATE seats
+SET reservation = 'Dawg P.'
+WHERE seat = '35D';
+
+-- error could not serialize
+-- donald got his seat
+
+
+-- DEADLOCK
+-- get a right-lock
+-- user 1
+SELECT * FROM seats FOR UPDATE;
+
+-- wants to look at fruits table
+SELECT * FROM fruit FOR UPDATE;
+
+--commit here will release lock
+
+--user 2
+SELECT * FROM fruit FOR UPDATE;
+
+-- wants to look at flight
+SELECT * FROM seats FOR UPDATE;
+-- error gets deadlock, process is waiting
+-- can't commi
+

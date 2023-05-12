@@ -1,0 +1,80 @@
+kaggle datasets:
+CREATE TABLE rainfall(
+    state_ut_name TEXT,
+    district TEXT,
+    PRIMARY KEY (state_ut_namem district),
+    Jan DOUBLE PERCISION, -- jan-> dec
+    Feb DOUBLE PERCISION,
+    Mar DOUBLE PERCISION,
+    Apr DOUBLE PERCISION,
+    May DOUBLE PERCISION,
+    Jun DOUBLE PERCISION,
+    Jul DOUBLE PERCISION,
+    Aug DOUBLE PERCISION,
+    Sep DOUBLE PERCISION,
+    Oct DOUBLE PERCISION,
+    Nov DOUBLE PERCISION,
+    Dec DOUBLE PERCISION,
+    annual DOUBLE PERCISIONS
+    q1 DOUBLE PERCISION, -- q1-> q3
+    q2 DOUBLE PERCISION,
+    q3 DOUBLE PERCISION
+)
+
+\copy rainfall FROM 'sql/rainfall.csv' WITH (header true, format csv);
+
+CREATE TABLE rainfall2 AS 
+SELECT statue_ut_name, district 'Jan' AS month jan
+FROM rainfall;
+
+INSERT INTO rainfall2
+SELECT state_ut_name, district, 'Feb',
+FROM rainfall;
+
+
+Normal Form:
+* company
+* internship_title
+* department
+* location
+pay
+category
+hours
+travel
+type
+qualifications* -> would have to be moved to a separate table (like a 
+multi-valued attribute)
+about
+project
+notes
+qr_code  VARBINARY(2048)
+
+A company, project -> internship_title
+B company -> department, about
+C company, department -> location
+D company, internship_title, hours, qualifications -> pay
+
+E company, internship_title, department, location -> pay, category, hours, 
+travel, type, about, project, notes, qr_code
+
+company, project -> internship_title
+(internship_title)+ = {internship_title}
+
+R1={company, internship_title, department, location, pay, category, hours, 
+travel, type, about, project, notes, qr_code}
+
+R2 = {company, project, internship_title } Key= { company, project }
+    FD A
+R3 = {company, project, department, location, pay, category, hours, 
+travel, type, about, project, notes, qr_code } KEY = { company, 
+department, location }
+    FD B, C
+
+"disappeared" D, E
+
+
+
+
+
+
+

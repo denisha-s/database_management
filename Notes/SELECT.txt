@@ -1,0 +1,79 @@
+SET search_path = PUBLIC;
+
+-- UNION/INTERSECT/EXCEPTS
+-- combine the 3 courses tables
+-- \d cs_courses
+-- \d mines_cs_courses
+-- \d mines_courses
+
+CREATE TABLE all_cs_courses AS
+SELECT * 
+FROM cs_courses
+UNION
+SELECT 'CSCI', SUBSTRING(course_id, 5, 3)::INTEGER, NULL, NULL, NULL, NULL, NULL -- 3 = length
+FROM mines_cs_courses
+UNION 
+SELECT SUBSTRING(course_id, 1, 4), SUBSTRING(course_id, 5, 3)::INTEGER, title, NULL, NULL, NULL, NULL, NULL
+FROM mines_courses
+WHERE SUBSTRING(course_id, 1, 4) = 'CSCI';
+-- just compsci classes to group
+
+-- which courses are in both tables?
+SELECT course_number
+FROM cs_courses
+INTERSECT ALL
+SELECT SUBSTRING(course_id, 5, 3)::INTEGER
+FROM mines_cs_courses;
+
+-- what courses are only in the mines_courses and not in the cs_courses?
+SELECT SUBSTRING(course_id, 5, 3)::INTEGER
+FROM mines_cs_courses
+EXCEPT
+SELECT course_number
+FROM cs_courses;
+
+SELECT course_number 
+FROM cs_courses
+EXCEPT
+SELECT SUBSTRING(course_id, 5, 3)::INTEGER
+FROM mines_cs_courses;
+
+-- Common Table Expressions: CTE / WITH clause
+
+-- number of classes each department has by each classes
+SELECT SUBSTRING(course_id, 1, 4) AS department, COUNT(*) 
+FROM mines_courses
+WHERE course_id NOT LIKE 'CSM%'
+GROUP BY department;
+
+WITH dept_count (dept, count) AS
+(SELECT SUBSTRING(course_id, 1, 4) AS department, COUNT(*) 
+FROM mines_courses
+WHERE course_id NOT LIKE 'CSM%'
+GROUP BY department)
+SELECT SUNSTRING(course_id, 1, 4) AS department, SUBSTRING(course_id, 5, 3):: INTEGER
+    count
+FROM mines_courses m JOIN dept_count d ON SUNSTRING(m.course_id, 1, 4) = d.dept
+ORDER BY department;
+
+-- find all prerequisites of CSCI 442
+WITH RECURSIVE rec_pre (padding, course, pre) AS 
+(SELECT '' AS padding, *
+ FROM cs_prereq
+ WHERE course = 'CSCI442'
+    UNION
+ SELECT '--' || r.padding, p.*
+ FROM rec_pre r JOIN cs_prereq p ON r.pre = p.course
+)
+SELECT *
+FROM rec_pre r;
+
+-- WINDOW functions / PARTITION
+
+-- number of classes each dept has by class
+SELECT SUBSTRING(course_id, 1, 4) AS department,
+    SUBSTRING(course_id, 5, 3):: INTEGER AS course_number,
+    COUNT(*) OVER (PARTITION BY SUBSTRING(course_id, 1, 4))
+FROM mines_courses
+WHERE course_id NOT LIKE 'CSM%';
+

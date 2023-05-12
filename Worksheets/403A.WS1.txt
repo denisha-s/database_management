@@ -1,0 +1,41 @@
+4. Write the SET search_path statement that would put your own schema (same name as your
+psql login), public, imdb, and textbook in your search_path (in that order):
+
+SET search_path = read, public, imdb, textbook;
+
+
+5. (Hint: movies is in imdb; use \d in psql to see its shape) What movies were produced in
+2001, in increasing popularity order?
+
+SELECT name
+FROM movies
+WHERE year = 2001
+ORDER BY rank; // rank 1 = least popular
+
+6. Output mailing labels (full name and address as a single column but with
+appropriate newlines; don’t worry about zip codes) for all textbook employees born after
+1960. This one’s a little tricky, but do-able; use E’\n’ as a string literal to get a newline
+character in Postgres SQL; you will also have to concatenate and separate strings. Refer to
+the slide of String Functions for string manipulations.
+
+SELECT fname || ' ' || lname ||
+       E'\n' || translate(address,',',E'\n')
+FROM employee
+WHERE EXTRACT(YEAR FROM bdate) > 1960;
+
+WHERE bdate > DATE'1960-12-31';
+
+
+Set Search
+1. Write the SET search_path statement that would put your own schema 
+(same name as your psql login), public, imdb, and textbook in your search_path (in that order):
+    SET search_path TO dsaviela, public, imdb, textbook;
+2. (Hint: movies is in imdb; use \d in psql to see its shape) 
+What movies were produced in 2001, in increasing popularity order? 
+    SELECT name FROM movies WHERE year = '2001' ORDER BY rank;
+3. (Bonus Question) Output mailing labels 
+(full name and address as a single column but with appropriate newlines; don’t worry about zip codes) 
+for all textbook employees born after 1960. 
+    SELECT fname || ' ' || lname || E'\n' || address AS mailing_labels
+    FROM employee
+    WHERE bdate >= '1960-01-01';

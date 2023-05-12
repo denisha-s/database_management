@@ -1,0 +1,69 @@
+-- Transactions demo
+
+-- lost update
+set search_path=transactions;
+
+--user 1
+begin;
+select * from seats where seat_number='35D';
+
+--user 2
+begin;
+select * from seats where seat_number='35D';
+
+--user 1
+update seats set reservation='Fester, U.' where seat_number='35D';
+
+--user 2
+update seats set
+reservation='Mouse, M.' where seat_number='35D';
+-- hangs
+
+--user 1
+commit;
+select * from seats;
+-- sees the seat
+
+--user 2
+finishes!
+commit;
+select * from seats;
+-- sees the seat!
+
+--user 1
+select * from seats;
+-- lost the seat!
+
+-- SOLUTION: SERIALIZABLE
+
+--both users
+begin;
+set transaction isolation level serializable;
+
+--repeat the steps, kills second update.
+
+-- SOLUTION: early locking
+
+--both users
+begin;
+select * from seats where seat_number='35B' FOR UPDATE;
+
+-- now one user waits for other to commit then continues.
+
+-- DEADLOCK
+
+--user 1
+begin
+select * from seats for update;
+
+--user 2
+begin;
+select * from fruit for update;
+
+--user 1
+select * from fruit for update;
+-- hangs
+
+--user 2
+select * from seats for update
+-- one of us will get a deadlock error, other will complete once error'd user rolls back (note commit will roll back).

@@ -1,0 +1,61 @@
+EXPLAIN SELECT temp_date, c.country
+FROM temp_by_country t JOIN country_capital c ON t.country=c.country 
+WHERE avg_temp> 25.5 AND capital = 'Harare';
+
+                                        QUERY PLAN                                          
+----------------------------------------------------------------------------------------------
+ Gather  (cost=1006.11..8870.81 rows=605 width=15)
+   Workers Planned: 2
+   ->  Hash Join  (cost=6.11..7810.31 rows=252 width=15)
+         Hash Cond: (t.country = c.country)
+         ->  Parallel Seq Scan on temp_by_country t  (cost=0.00..7567.61 rows=62417 width=14)
+               Filter: (avg_temp > '25.5'::double precision)
+         ->  Hash  (cost=6.10..6.10 rows=1 width=11)
+               ->  Seq Scan on country_capital c  (cost=0.00..6.10 rows=1 width=11)
+                     Filter: (capital = 'Harare'::text)
+(9 rows)
+
+
+-- Run this code to warm up cache (less execution time)
+EXPLAIN ANALYZE SELECT temp_date, c.country
+FROM temp_by_country t JOIN country_capital c ON t.country=c.country 
+WHERE avg_temp> 25.5 AND capital = 'Harare';
+
+                                                        QUERY PLAN                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------
+ Gather  (cost=1006.11..8870.81 rows=605 width=15) (actual time=28.992..55.961 rows=31 loops=1)
+   Workers Planned: 2
+   Workers Launched: 2
+   ->  Hash Join  (cost=6.11..7810.31 rows=252 width=15) (actual time=25.442..49.111 rows=10 loops=3)
+         Hash Cond: (t.country = c.country)
+         ->  Parallel Seq Scan on temp_by_country t  (cost=0.00..7567.61 rows=62417 width=14) (actual time=0.121..37.831 rows=50697 loops=3)
+               Filter: (avg_temp > '25.5'::double precision)
+               Rows Removed by Filter: 141790
+         ->  Hash  (cost=6.10..6.10 rows=1 width=11) (actual time=0.077..0.078 rows=1 loops=3)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               ->  Seq Scan on country_capital c  (cost=0.00..6.10 rows=1 width=11) (actual time=0.065..0.066 rows=1 loops=3)
+                     Filter: (capital = 'Harare'::text)
+                     Rows Removed by Filter: 247
+ Planning Time: 0.389 ms
+ Execution Time: 56.010 ms
+(15 rows)
+-- index filters and join conditions
+
+CREATE INDEX cc_idx ON country_capital(capital);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,11 @@
+SELECT DISTINCT status 
+FROM sales;
+
+SLECT DISTINCT salesperson
+FROM sales;
+
+SELECT COUNT(*)
+FROM sales;
+
+look for quantity column to determine COUNT and SUM 
+

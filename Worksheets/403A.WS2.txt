@@ -1,0 +1,45 @@
+1. What schemas can I see in the database?
+
+SELECT schema_name
+FROM information_schema.schemata;
+
+
+2. In the years 1970-1999, music was very popular, so artists released a number of albums during that time. What albums were released during that time period? Please include their year of release and their name, and list them by year and album name. (Again: just the SQL that would provide that list, not the list itself!) HINT: you can do this with just one condition in the WHERE clause.
+
+SELECT year, title AS album
+FROM music.album
+WHERE year BETWEEN 1970 AND 1999
+ORDER BY year, album;
+
+
+3. ‘z’ is the least used letter in the English language. Print names found in the ‘group_member’ table that contain the letter ‘z’. Each name should only appear once. (Note this is case sensitive, we are only looking for z, not Z).
+
+SELECT DISTINCT name
+FROM music.group_member
+WHERE name LIKE '%z%';
+
+4. There are two types of artists in the artist table: ‘Person’ and ‘Group’. Don’t we love bands? Yes, we do! Write a query that will print out the name of the artist and print out either ‘Diva!’ for solo artists or ‘We Love Bands!!’ for groups. (Hint: use a CASE)
+
+SELECT name,
+     CASE WHEN type = 'Person' THEN 'Diva!'
+          ELSE 'We Love Bands!!'
+     END AS expression
+FROM music.artist;
+
+     CASE WHEN type = 'Person' THEN 'Diva!'
+          WHEN type = 'Group' THEN  'We Love Bands!!'
+     END AS expression
+
+5. Are any solo artists also group members? If so, print the artist’s name. (Note: this is not a simple id = artist_id type of query; the value of SQL is the ability to look beyond the defined connections of tables!) Each name should only appear once. You will need to use a 2-table join.
+
+SELECT DISTINCT a.name
+FROM music.artist a, music.group_member g
+WHERE a.name = g.name
+  AND a.type='Person';
+
+
+
+6. (BONUS) List the group members who left a group after 1999 - include the group they left, and the year they left. What order of results do you think makes sense? Do that, and explain why you chose that order.
+
+
+

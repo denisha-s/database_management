@@ -1,0 +1,49 @@
+SELECT name, title, year
+FROM album, artist -- cross product is comma in from clause
+WHERE artist_id=artist.id
+
+       SELECT             WHERE              FROM
+π_name,title,year(σ_artist_id=artist.id(album x artist))
+
+
+SELECT artist,title,year
+FROM music
+WHERE year IN (SELECT year
+                FROM music
+                WHERE artist = 'Billie Eilish')
+
+π_artist,title,year(σ_yearIN(  (π_year (music))
+                    σ_artist='Billie Eilish
+                        (music)))
+
+
+SELECT name, SUM(size)
+FROM fruit2
+WHERE size > 25
+GROUP BY name
+HAVING SUM(size) > 20
+
+σ_sum_size>20(nameG_name,SUM(size)as sum_size(σ_size>25(fruit2)))
+
+
+SELECT a.name AS artist, gm.name AS member, x.begin_year, x.end_year
+FROM group_member AS gm 
+    INNER JOIN artist_member_xref AS x  -- explicit join use JOIN operator
+        ON (x.member_id=gm.id) 
+    RIGHT OUTER JOIN artist AS a
+        ON x.artist_id=a.id
+
+ρ_(a.name=artist,gm.name=member)
+(π_a.name,gm.name,x.begin_year,x.end_year
+(((ρ_gm(group_member))⨝_x.member_id=gm.id(ρ_x(artist_member_xref)))
+    ⟖_(x.artist_id=a.id)(ρ_a(artist))))
+
+
+
+
+
+
+
+
+
+

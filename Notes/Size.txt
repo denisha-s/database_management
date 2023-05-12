@@ -1,0 +1,79 @@
+SET search_path = music;
+
+-- size of decimal column ceil(prec/4)* + ~4
+SELECT ceil(AVG(pg_column_size(amount))) 
+FROM grouping.sales;
+-- returns 6
+
+
+\d music.label 
+/*
+music.label
+            Table "music.label"
+    Column    |  Type   |          Size 
+--------------+---------+-------------------------
+ id           | integer |  8       
+ name         | text    |  4+avg(length) = 4 + 13 
+ headquarters | text    |  4+avg(length) = 4 + 12
+Indexes:
+    "label_pkey" PRIMARY KEY, btree (id) -- id = 8 bytes
+*/
+
+SELECT AVG(length(name)), AVG(length(headquarters))
+FROM music.label;
+
+/*
+         avg         |         avg         
+---------------------+---------------------
+ 13.0779220779220779 | 12.0526315789473684
+
+ */
+
+
+-- 8192 = 24 + R * (27 + 8 + 4 + 13 + 4 + 12)
+-- R = 120.11
+-- 27 = row overhead
+
+SELECT FLOOR(8192 - 24.0)/(27 + 8 + 4 + 13 + 4 + 12) AS rows_per_page;
+-- 120.11 does not fit on page use FLOOR
+
+SELECT COUNT(*) 
+FROM music.label;
+-- 77
+
+SELECT 77.0/120 * 100.0 AS percent_full;
+-- 64.166%
+
+SELECT 120 - 77 AS rows_that_will_fit;
+-- 43
+
+-- INDEX on id
+-- 1 page overhead 
+-- 90% fill factor 
+-- bloat 25-50%
+-- page OH 24 + 16 = 40
+
+-- column size + pointer (8B)
+
+-- 8192 = 40 + R*(27 + 8 + 8)
+SELECT FLOOR(8152.0 / (27 + 8 + 8)) AS index_rows_per_page;
+-- 189
+
+
+SELECT pg_table_size('music.label'), pg_indexes_size('music.label'), pg_relation_size('music.label');
+/*
+ pg_table_size | pg_indexes_size | pg_relation_size 
+---------------+-----------------+------------------
+         16384 |           16384 |             8192
+
+*/
+
+
+
+
+
+
+
+
+
+

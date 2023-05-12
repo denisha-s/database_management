@@ -1,0 +1,170 @@
+403A
+ WS 5
+
+1. headquarters
+2. label->headquarters will move to the separate table
+
+3. artist->type
+
+4. 
+round 1:
+choose artist -> type
+artist+ = { artist, type }
+
+X = { artist }
+Y = artist+ = {artist, type}
+Z = R - X - Y = { album, year, number, track }
+
+R1 = X u Y = {artist, type}
+artist -> type
+key: artist
+R1 is in BCNF
+
+R2 = X u Z = { artist, album, year, number, track }
+key: artist, album, year, number, track
+artist, album -> year
+album, year -> artist
+R2 is NOT in BCNF
+
+round 2: decompose R2
+FD: artist, album -> year
+{artist, album}+ = {artist, album, year} 
+
+X = { artist, album }
+Y = {artist, album, year}
+Z = R2 - X - Y = { number, track}
+
+R3 = X u Y = {artist, album, year}
+artist, album -> year
+album, year -> artist
+key: artist, album
+key2: album, year
+R3 is BCNF
+
+R4 = X u Z = {artist, album, number, track }
+no FDs
+key has to be all attributes
+key: artist, album, number, track
+R4 is BCNF
+
+round 3? try to decompose R3
+{artist, album}+ = {artist, album, year}
+get back same three.
+=> two keys
+
+
+R becomes R1, R3, R4.
+
+5.
+
+CREATE TABLE headquarters AS
+  SELECT DISTINCT label, headquarters
+  FROM music2
+  WHERE headquarters NOT LIKE '%';
+
+INSERT INTO headquarters 
+  SELECT label, SUBSTR(headquarters,1, POSITION(',',headquarters)-1)
+  FROM music2
+  WHERE headquarters LIKE '%,%';
+
+INSERT INTO headquarters 
+  SELECT label, SUBSTR(headquarters,POSITION(',',headquarters)+1)
+  FROM music2
+  WHERE headquarters LIKE '%,%';
+
+CREATE TABLE artist_type AS
+  SELECT DISTINCT artist, type
+  FROM music2;
+
+ALTER TABLE artist TYPE ADD PRIMARY KEY (artist);
+
+CREATE TABLE music2a AS
+  SELECT DISTINCT artist, album, year, label, genre
+  FROM music2;
+
+ALTER TABLE music2a ADD PRIMARY kEY (artist, album, year, label);
+
+ WS 5
+
+1. headquarters
+2. label->headquarters will move to the separate table
+
+3. artist->type
+
+4. 
+round 1:
+choose artist -> type
+artist+ = { artist, type }
+
+X = { artist }
+Y = artist+ = {artist, type}
+Z = R - X - Y = { album, year, number, track }
+
+R1 = X u Y = {artist, type}
+artist -> type
+key: artist
+R1 is in BCNF
+
+R2 = X u Z = { artist, album, year, number, track }
+key: artist, album, year, number, track
+artist, album -> year
+album, year -> artist
+R2 is NOT in BCNF
+
+round 2: decompose R2
+FD: artist, album -> year
+{artist, album}+ = {artist, album, year} 
+
+X = { artist, album }
+Y = {artist, album, year}
+Z = R2 - X - Y = { number, track}
+
+R3 = X u Y = {artist, album, year}
+artist, album -> year
+album, year -> artist
+key: artist, album
+key2: album, year
+R3 is BCNF
+
+R4 = X u Z = {artist, album, number, track }
+no FDs
+key has to be all attributes
+key: artist, album, number, track
+R4 is BCNF
+
+round 3? try to decompose R3
+{artist, album}+ = {artist, album, year}
+get back same three.
+=> two keys
+
+
+R becomes R1, R3, R4.
+
+5.
+CREATE TABLE headquarters AS
+  SELECT label, headquarters
+  FROM music2
+  WHERE headquarters NOT LIKE '%,%';
+
+INSERT INTO headquarters 
+  SELECT label, SUBSTR(headquarters,1, POSITION(',',headquarters)-1)
+  FROM music2
+  WHERE headquarters LIKE '%,%';
+
+INSERT INTO headquarters 
+  SELECT label, SUBSTR(headquarters,POSITION(',',headquarters)+1)
+  FROM music2
+  WHERE headquarters LIKE '%,%';
+
+CREATE TABLE artist_type AS
+  SELECT DISTINCT artist, type
+  FROM music2;
+
+ALTER TABLE artist TYPE ADD PRIMARY KEY (artist);
+
+CREATE TABLE music2a AS
+  SELECT DISTINCT artist, album, year, label, genre
+  FROM music2;
+
+ALTER TABLE music2a ADD PRIMARY kEY (artist, album, year, label);
+
