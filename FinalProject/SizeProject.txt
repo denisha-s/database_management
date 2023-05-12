@@ -1,0 +1,66 @@
+\d depression_rates
+
+/*
+ Table "s23_group9.depression_rates"
+  Column  |     Type     |    Size    
+----------+--------------+------------
+ category | text         | 4 + 8 = 12 
+ type     | text         | 4 + 9 = 13 
+ percent  | numeric(3,1) |     5      
+Indexes:
+    "depression_rates_pkey" PRIMARY KEY, btree (category)
+*/
+
+SELECT AVG(length(category)), AVG(length(type))
+FROM s23_group9.depression_rates;
+/*
+        avg         |        avg         
+--------------------+--------------------
+ 8.1666666666666667 | 9.2500000000000000
+*/
+
+-- # of rows per page
+SELECT FLOOR(8192 - 24.0)/(27 + 12 + 13 + 5) AS rows_per_page;
+-- 8192 = 24 + R * (27 + 12 + 13 + 5)
+-- R = 143
+
+-- Estimation of the size of the table in 10 years
+-- rows per year 12 * 120
+SELECT ceil((COUNT(*) + 10 * 12 * 120)/143.0) FROM depression_rates;
+-- 101 rows
+
+
+
+
+
+
+
+\d
+/*
+Table "s23_group9.social_media_usage"
+     Column     |     Type     |    Size   
+----------------+--------------+-----------
+ id_age_group   | text         |  4 + 4 = 8         
+ id_sm_platform | text         |  4 + 7 = 11         
+ percent        | numeric(3,1) |      5    
+    "social_media_usage_pkey" PRIMARY KEY, btree (id_age_group, id_sm_platform)
+*/
+
+SELECT AVG(length(id_age_group)), AVG(length(id_sm_platform))
+FROM s23_group9.social_media_usage;
+/*
+       avg         |        avg         
+--------------------+--------------------
+ 4.3333333333333333 | 7.1578947368421053
+*/
+
+-- # of rows per page
+SELECT FLOOR(8192 - 24.0)/(27 + 8 + 11 + 5) AS rows_per_page;
+-- 8192 = 24 + R * (27 + 8 + 11 + 5)
+-- R = 160
+
+-- Estimation of the size of the table in 10 years
+-- rows per year 19 * 120
+SELECT ceil((COUNT(*) + 10 * 19 * 120)/160.0) FROM depression_rates;
+-- 143 rows
+
